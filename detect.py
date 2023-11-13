@@ -27,8 +27,7 @@ def detect(save_img=False):
     # Initialize
     set_logging()
     device = select_device(opt.device)
-    half = device.type != 'cpu'  # half precision only supported on CUDA
-
+    half = device.type != 'cpu' and device.type !='mps' # half precision only supported on CUDA
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
     stride = int(model.stride.max())  # model stride
@@ -36,10 +35,10 @@ def detect(save_img=False):
 
     if trace:
         model = TracedModel(model, device, opt.img_size)
-
+    elif device == torch.device('mps') :
+        model.to(device)
     if half:
         model.half()  # to FP16
-
     # Second-stage classifier
     classify = False
     if classify:
